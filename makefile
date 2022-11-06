@@ -35,7 +35,7 @@ BLD_FULL_NAME = $(BLD_NAME)_v$(BLD_VERSION)_$(BLD_TYPE)_$(BLD_PLATFORM)$(BLD_FOR
 
 all: asset main
 
-LIB_OBJECTS = argparser.o logger.o debug.o alloc_tracker.o
+LIB_OBJECTS = argparser.o logger.o debug.o alloc_tracker.o file_helper.o bin_tree.o
 
 MAIN_OBJECTS = main.o main_utils.o $(LIB_OBJECTS)
 main: $(MAIN_OBJECTS)
@@ -66,6 +66,12 @@ logger.o:
 
 debug.o:
 	$(CC) $(CFLAGS) -c lib/util/dbg/debug.cpp
+
+file_helper.o:
+	$(CC) $(CFLAGS) -c lib/file_helper.cpp
+
+bin_tree.o:
+	$(CC) $(CFLAGS) -c lib/bin_tree.cpp
 
 clean:
 	rm -rf *.o

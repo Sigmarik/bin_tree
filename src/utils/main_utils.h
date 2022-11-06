@@ -12,14 +12,10 @@
 #ifndef COMMON_UTILS_H
 #define COMMON_UTILS_H
 
+#include <ctype.h>
+
 #include "config.h"
 #include "lib/alloc_tracker/alloc_tracker.h"
-
-/**
- * @brief Return value but clean all allocations first.
- * 
- */
-#define return_clean(value) do { free_all_allocations(); return value; } while (0)
 
 //* We need this function as it is impossible to create static constant lists from local functions.
 //* So... What it does is it creates a dynamic array and tracks it for later deletion.
@@ -75,5 +71,41 @@ void print_owl(const int argc, void** argv, const char* argument);
  * 
  */
 void print_label();
+
+/**
+ * @brief Get the input file name from the list of command line arguments.
+ * 
+ * @param argc argument count
+ * @param argv argument values
+ * @return const char* 
+ */
+const char* get_input_file_name(const int argc, const char** argv);
+
+/**
+ * @brief Get the output file name from the list of command line arguments.
+ * 
+ * @param argc argument count
+ * @param argv argument values
+ * @return const char* 
+ */
+const char* get_output_file_name(const int argc, const char** argv);
+
+/**
+ * @brief Read user input and do actions depending on if user entered yes or no.
+ * 
+ * @param action_yes code to execute on YES
+ * @param action_no code to execute on NO
+ */
+#define yn_branch(action_yes, action_no) do {   \
+    char __answer = '\0';                       \
+    scanf(" %c", &__answer);                    \
+    __answer = tolower(__answer);               \
+                                                \
+    while (getc(stdin) != '\n');                \
+                                                \
+    if (__answer == 'y') { action_yes; break; } \
+    if (__answer == 'n') { action_no;  break; } \
+    printf("yes/no expected, try again.\n>>> ");\
+} while(true)
 
 #endif

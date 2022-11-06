@@ -62,4 +62,10 @@ void free_all_allocations();
  */
 void free_var(void** ptr);
 
+/**
+ * @brief Return value but clean all allocations first.
+ * 
+ */
+#define return_clean(value) do { free_all_allocations(); return value; } while (0)
+
 #endif

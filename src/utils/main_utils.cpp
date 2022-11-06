@@ -56,8 +56,34 @@ void print_owl(const int argc, void** argv, const char* argument) {
 }
 
 void print_label() {
-    printf("Listworks lib showcase by Ilya Kudryashov.\n");
-    printf("Program implements TUI for the list.\n");
+    printf("Guesser game by Ilya Kudryashov.\n");
+    printf("Program uses binary tree to guess things.\n");
     printf("Build from\n%s %s\n", __DATE__, __TIME__);
     log_printf(ABSOLUTE_IMPORTANCE, "build info", "Build from %s %s.\n", __DATE__, __TIME__);
+}
+
+const char* get_input_file_name(const int argc, const char** argv) {
+    const char* file_name = NULL;
+
+    for (int argument_id = 1; argument_id < argc; ++argument_id) {
+        if (*argv[argument_id] == '-') continue;
+        file_name = argv[argument_id];
+        break;
+    }
+
+    return file_name;
+}
+
+const char* get_output_file_name(const int argc, const char** argv) {
+    const char* file_name = NULL;
+
+    bool enc_first_name = false;
+    for (int argument_id = 1; argument_id < argc; ++argument_id) {
+        if (*argv[argument_id] == '-') continue;
+        file_name = argv[argument_id];
+        if (enc_first_name) return file_name;
+        else enc_first_name = true;
+    }
+
+    return NULL;
 }
