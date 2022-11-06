@@ -1,10 +1,10 @@
-{"greater 10"
-    {"greater 5"
-        {"7"}
-        {"3"}
-    }
-    {"greater 15"
+{"greater than 10"
+    {"greater than 15"
         {"17"}
         {"13"} 
+    }
+    {"greater than 5"
+        {"7"}
+        {"3"}
     }
 }

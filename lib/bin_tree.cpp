@@ -84,7 +84,8 @@ void TreeNode_graph_dump(TreeNode* node, FILE* file) {
     fprintf(file, "\tV%p [label=\"%s\"]\n", node, node->value ? node->value : "NULL");
 
     if (node->parent) {
-        fprintf(file, "\tV%p -> V%p [label=\"%s\"]\n", node->parent, node, node == node->parent->left ? "yes" : "no");
+        fprintf(file, "\tV%p -> V%p [color=\"%s\"]\n", node->parent, node, 
+                node == node->parent->left ? "darkgreen" : "darkred");
     }
 
     if (node->left) TreeNode_graph_dump(node->left, file);
@@ -114,7 +115,7 @@ void _BinaryTree_dump_graph(BinaryTree* const tree, unsigned int importance) {
     time(&raw_time);
 
     char pict_name[TREE_PICT_NAME_SIZE] = "";
-    sprintf(pict_name, TREE_LOG_ASSET_FOLD_NAME "/pict%04d_%ld.png", ++PictCount, raw_time);
+    sprintf(pict_name, TREE_LOG_ASSET_FOLD_NAME "/pict%04ld_%ld.png", (long int)++PictCount, raw_time);
 
     char draw_request[TREE_DRAW_REQUEST_SIZE] = "";
     sprintf(draw_request, "dot -Tpng -o %s " TREE_TEMP_DOT_FNAME, pict_name);

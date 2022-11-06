@@ -99,7 +99,7 @@ const char* get_output_file_name(const int argc, const char** argv);
 #define yn_branch(action_yes, action_no) do {   \
     char __answer = '\0';                       \
     scanf(" %c", &__answer);                    \
-    __answer = tolower(__answer);               \
+    __answer = (char)tolower(__answer);         \
                                                 \
     while (getc(stdin) != '\n');                \
                                                 \

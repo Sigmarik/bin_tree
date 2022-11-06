@@ -95,15 +95,18 @@ int main(const int argc, const char** argv) {
 
     BinaryTree_read(&decision_tree, source_db, &errno);
 
+    track_allocation(&decision_tree, (dtor_t*)BinaryTree_dtor);
+
     BinaryTree_dump(&decision_tree, ABSOLUTE_IMPORTANCE);
 
     bool running = true;
     while (running) {
         char command = '\0';
 
-        printf("Command (Q - quit, G - guess, D - definition, C - compare)\n>>> ");
+        printf("Command (Q - quit, G - guess, D - definition, P - print graph into logs)\n>>> ");
         scanf(" %c", &command);
-        command = toupper(command);
+        while (getc(stdin) != '\n');
+        command = (char)toupper(command);
 
         log_printf(STATUS_REPORTS, "status", "Encountered command %c.\n", command);
 
@@ -123,12 +126,19 @@ void execute_command(char cmd, BinaryTree* tree, int* const err_code) {
     case 'D': {
         printf("Which word do you want me to give definition of?\n>>> ");
         char word[MAX_INPUT_LENGTH] = "";
-        scanf("%s", &word);
+        scanf("%s", word);
         define(tree, word, err_code);
+        break;
     }
-    default:
+    case 'P': {
+        log_printf(ABSOLUTE_IMPORTANCE, "dump_info", "Called dump on user request.\n");
+        BinaryTree_dump(tree, ABSOLUTE_IMPORTANCE);
+        break;
+    }
+    default: {
         printf("Incorrect command, enter command from the list.\n");
         break;
+    }
     }
 }
 
@@ -182,21 +192,21 @@ void define(BinaryTree* tree, const char* word, int* const err_code) {
     if (!node) {
         printf("Word was not found!\n");
     } else {
-        puts("It ");
+        printf("It ");
 
         TreeNode* chain[MAX_TREE_DEPTH] = {};
         int depth = 0;
-        do {
+        while(node) {
             chain[depth] = node;
             node = node->parent;
             ++depth;
-        } while(node);
-        for (int index = depth; index > 0; --index) {
-            puts("is ");
-            if (chain[depth] == chain[depth - 1]->left) puts("not ");
-            puts(chain[index]->value);
         }
-        puts(".\n");
+        for (int index = depth - 1; index > 0; --index) {
+            printf("is ");
+            if (chain[index]->right == chain[index - 1]) printf("not ");
+            printf("%s, ", chain[index]->value);
+        }
+        printf(".\n");
     }
 }
 
