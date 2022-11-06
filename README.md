@@ -1,6 +1,6 @@
-# List data structure implementation.
+# Guessing game.
 ## Description & Purpose
-Module implementing list data structure and graphviz-capable dumps.
+Program implements simple binary guessing game using binary trees.
 ## Building
 
 Compile project (linux):
@@ -11,9 +11,9 @@ Clean the project (linux):
 
 `...# make clean`
 
-Run module showcase (linux):
+Run the game (linux):
 
-`...# make run`
+`...# make run ARGS="optional_source.db"`
 
 Remove build folders (linux):
 
