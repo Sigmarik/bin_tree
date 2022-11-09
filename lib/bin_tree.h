@@ -49,7 +49,7 @@ void BinaryTree_read(BinaryTree* const tree, FILE* file, int* const err_code = N
  * @param node node to dump
  * @param file destination file
  */
-void TreeNode_graph_dump(TreeNode* node, FILE* file);
+void TreeNode_graph_dump(const TreeNode* node, FILE* file);
 
 /**
  * @brief Dump the list into logs.
@@ -68,7 +68,7 @@ void TreeNode_graph_dump(TreeNode* node, FILE* file);
  * @param tree 
  * @param importance 
  */
-void _BinaryTree_dump_graph(BinaryTree* const tree, unsigned int importance);
+void _BinaryTree_dump_graph(const BinaryTree* const tree, unsigned int importance);
 
 /**
  * @brief Find the node with specified value in the tree.
@@ -78,6 +78,17 @@ void _BinaryTree_dump_graph(BinaryTree* const tree, unsigned int importance);
  * @param err_code variable to use as errno
  * @return 
  */
-TreeNode* BinaryTree_find(BinaryTree* const tree, const char* word, int* const err_code = NULL);
+TreeNode* BinaryTree_find(const BinaryTree* const tree, const char* word, int* const err_code = NULL);
+
+/**
+ * @brief Find the path to the node from the root of the tree.
+ * 
+ * @param node vertex to find the path to
+ * @param path array to write the path to
+ * @param out_length variable to put length of the path to
+ * @param max_length maximal length of the path
+ */
+void BinaryTree_fill_path(const TreeNode* node, const TreeNode* *path, size_t* const out_length, 
+                          const size_t max_length, int* const err_code = NULL);
 
 #endif

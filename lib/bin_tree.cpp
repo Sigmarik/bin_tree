@@ -79,7 +79,7 @@ void BinaryTree_read(BinaryTree* const tree, FILE* file, int* const err_code) {
     read_node(tree->root, file, err_code);
 }
 
-void TreeNode_graph_dump(TreeNode* node, FILE* file) {
+void TreeNode_graph_dump(const TreeNode* node, FILE* file) {
     if (!node || !file) return;
     fprintf(file, "\tV%p [label=\"%s\"]\n", node, node->value ? node->value : "NULL");
 
@@ -94,7 +94,7 @@ void TreeNode_graph_dump(TreeNode* node, FILE* file) {
 
 static size_t PictCount = 0;
 
-void _BinaryTree_dump_graph(BinaryTree* const tree, unsigned int importance) {
+void _BinaryTree_dump_graph(const BinaryTree* const tree, unsigned int importance) {
     FILE* temp_file = fopen(TREE_TEMP_DOT_FNAME, "w");
     
     _LOG_FAIL_CHECK_(temp_file, "error", ERROR_REPORTS, return, NULL, 0);
@@ -125,7 +125,7 @@ void _BinaryTree_dump_graph(BinaryTree* const tree, unsigned int importance) {
     _log_printf(importance, "list_img_dump", "\n<img src=\"%s\">\n", pict_name);
 }
 
-TreeNode* BinaryTree_find(BinaryTree* const tree, const char* word, int* const err_code) {
+TreeNode* BinaryTree_find(const BinaryTree* const tree, const char* word, int* const err_code) {
     _LOG_FAIL_CHECK_(tree, "error", ERROR_REPORTS, return NULL, err_code, EFAULT);
     _LOG_FAIL_CHECK_(word, "error", ERROR_REPORTS, return NULL, err_code, EFAULT);
 
@@ -151,6 +151,23 @@ TreeNode* BinaryTree_find(BinaryTree* const tree, const char* word, int* const e
     } while (node != NULL);
 
     return NULL;
+}
+
+void BinaryTree_fill_path(const TreeNode* node, const TreeNode* *path, size_t* const out_length, 
+                          const size_t max_length, int* const err_code) {
+    _LOG_FAIL_CHECK_(node,       "error", ERROR_REPORTS, return, err_code, EFAULT);
+    _LOG_FAIL_CHECK_(path,       "error", ERROR_REPORTS, return, err_code, EINVAL);
+    _LOG_FAIL_CHECK_(out_length, "error", ERROR_REPORTS, return, err_code, EFAULT);
+
+    for (; node && *out_length < max_length; node = node->parent, ++*out_length) {
+        path[*out_length] = node;
+    }
+
+    for (size_t index = 0; 2 * index < *out_length; index++) {
+        const TreeNode* swap_buffer = path[index];
+        path[index] = path[*out_length - index - 1];
+        path[*out_length - index - 1] = swap_buffer;
+    }
 }
 
 static void recursive_dtor(TreeNode* node) {
