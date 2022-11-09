@@ -70,6 +70,15 @@ int clamp(const int value, const int left, const int right);
 void print_owl(const int argc, void** argv, const char* argument);
 
 /**
+ * @brief Disable all voice lines.
+ * 
+ * @param argc unimportant
+ * @param argv unimportant
+ * @param argument unimportant
+ */
+void mute_speaker(const int argc, void** argv, const char* argument);
+
+/**
  * @brief Print program label and build date/time to console and log.
  * 
  */

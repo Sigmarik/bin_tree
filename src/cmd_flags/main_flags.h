@@ -15,3 +15,5 @@
 { {'I', ""}, { bundle(1, &log_threshold), 1, edit_int },
     "set log threshold to the specified number.\n"
     "\tDoes not check if integer was specified." },
+
+{ {'S', "silent"}, { {}, 0, mute_speaker } }

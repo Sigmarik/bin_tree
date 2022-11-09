@@ -18,6 +18,7 @@
 #include "lib/util/argparser.h"
 #include "lib/alloc_tracker/alloc_tracker.h"
 #include "lib/file_helper.h"
+#include "lib/speaker.h"
 
 #include "utils/config.h"
 
@@ -64,9 +65,13 @@ int main(const int argc, const char** argv) {
 
     BinaryTree_dump(&decision_tree, ABSOLUTE_IMPORTANCE);
 
+    say("Here we go.");
+
     bool running = true;
     while (running) {
         char command = '\0';
+
+        say("What would you like me to do?");
 
         printf("Command (Q - quit, G - guess, D - definition, C - compare, P - print the graph into logs)\n>>> ");
         scanf(" %c", &command);
@@ -78,6 +83,8 @@ int main(const int argc, const char** argv) {
         if (command == 'Q') running = false;
         else execute_command(command, &decision_tree);
     }
+
+    say("How sad. Anyway, do you want me to save what you have done to the database?");
 
     printf("Save graph to the same file if was read from?\n>>> ");
     yn_branch({

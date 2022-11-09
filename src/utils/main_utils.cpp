@@ -3,14 +3,17 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
+#include "lib/speaker.h"
+
 /**
  * @brief Print one parameter of the object in the form of "is (not) an object(, )"
  * 
+ * @param destination the string where to print the argument.
  * @param node argument to print
  * @param next_node nex node in definition path
  * @param is_last is the curent node the last one in the list
  */
-static void say_argument(const TreeNode* node, const TreeNode* next_node, bool is_last);
+static size_t print_argument(char* destination, const TreeNode* node, const TreeNode* next_node, bool is_last);
 
 void** bundle(size_t count, ...) {
     va_list args;
@@ -64,6 +67,11 @@ void print_owl(const int argc, void** argv, const char* argument) {
     }
 }
 
+void mute_speaker(const int argc, void** argv, const char* argument) {
+    SILENCE_UNUSED(argc); SILENCE_UNUSED(argv); SILENCE_UNUSED(argument);
+    speaker_set_mute(false);
+}
+
 void print_label() {
     printf("Guesser game by Ilya Kudryashov.\n");
     printf("Program uses binary tree to guess things.\n");
@@ -104,25 +112,34 @@ void execute_command(char cmd, BinaryTree* tree, int* const err_code) {
         break;
     }
     case 'D': {
+        say("What do you need to know more about?");
+
         printf("Which word do you want me to give definition of?\n>>> ");
         char word[MAX_INPUT_LENGTH] = "";
         fgets(word, MAX_INPUT_LENGTH - 1, stdin);
+        word[strlen(word) - 1] = '\0';
         define(tree, word, err_code);
         break;
     }
     case 'P': {
+        say("Trust me, I passed this task over to my friend.");
+
         log_printf(ABSOLUTE_IMPORTANCE, "dump_info", "Called dump on user request.\n");
         BinaryTree_dump(tree, ABSOLUTE_IMPORTANCE);
         break;
     }
     case 'C': {
-        printf("What do you want me to compare with something?\n>>> ");
+        say("What is the first thingy you want me to compare?");
+
+        printf("What is the first thing to compare?\n>>> ");
 
         char word_a[MAX_INPUT_LENGTH] = "";
         fgets(word_a, MAX_INPUT_LENGTH - 1, stdin);
         word_a[strlen(word_a) - 1] = '\0';
 
-        printf("What do you want me to compare %s to?\n>>> ", word_a);
+        say("And what do you want to compare %s to?", word_a);
+
+        printf("What to compare %s to?\n>>> ", word_a);
 
         char word_b[MAX_INPUT_LENGTH] = "";
         fgets(word_b, MAX_INPUT_LENGTH - 1, stdin);
@@ -132,6 +149,8 @@ void execute_command(char cmd, BinaryTree* tree, int* const err_code) {
         break;
     }
     default: {
+        say("This task is too easy. Try something harder.");
+
         printf("Incorrect command, enter command from the list.\n");
         break;
     }
@@ -144,15 +163,25 @@ void guess(BinaryTree* tree, int* const err_code) {
     TreeNode* node = tree->root;
 
     while (node->left && node->right) {
+        say("Is it %s?", node->value);
+
         printf("Is it %s? (yes/no)\n>>> ", node->value);
         yn_branch({ node = node->left; }, { node = node->right; });
     }
 
+    say("It has to be %s. Am I right?", node->value);
+
     printf("It must be %s. Is it? (yes/no)\n>>> ", node->value);
-    yn_branch({ puts("Yay!\n"); }, {
+    yn_branch({ 
+        puts("Yay!");
+        say("How boring.");
+    }, /* else */ {
         char new_name[MAX_INPUT_LENGTH] = "";
 
-        printf("What is it, then?\n>>> ");
+        say("You must have been mistaking. Are you sure that you are right? "
+            "If so, enter what you thought was the correct answer below.");
+
+        printf("What is the correct answer?\n>>> ");
 
         fgets(new_name, MAX_INPUT_LENGTH, stdin);
 
@@ -165,6 +194,8 @@ void guess(BinaryTree* tree, int* const err_code) {
 
         TreeNode* beta_node = (TreeNode*) calloc(1, sizeof(*beta_node));
         TreeNode_ctor(beta_node, node->value, node->free_value, node, true, err_code);
+
+        say("What is the difference between %s and %s?", value_buffer, node->value);
 
         printf("What is %s that %s is not?\nIt is ", value_buffer, node->value);
 
@@ -186,9 +217,17 @@ void define(BinaryTree* tree, const char* word, int* const err_code) {
 
     const TreeNode* node = BinaryTree_find(tree, word, err_code);
     if (!node) {
+        say("You must have made a mistake spelling this word. There are no simmilarities known to mankind!");
+
         printf("Word was not found!\n");
+    } else if (node == tree->root) {
+        say("It is the only word humanity knows about at this point in time.");
+        printf("It is the only known word...\n");
     } else {
-        printf("It ");
+        char phrase[MAX_PHRASE_LENGTH] = "";
+        char* phrase_typer = phrase;
+
+        phrase_typer += sprintf(phrase_typer, "It ");
 
         const TreeNode* chain[MAX_TREE_DEPTH] = {};
         size_t depth = 0;
@@ -198,10 +237,13 @@ void define(BinaryTree* tree, const char* word, int* const err_code) {
         --depth; // <- Account for the answer node at the end of each path.
 
         for (size_t index = 0; index < depth; ++index) {
-            say_argument(chain[index], chain[index + 1], index == depth - 1);
+            phrase_typer += print_argument(phrase_typer, chain[index], chain[index + 1], index == depth - 1);
         }
 
-        printf(".\n");
+        phrase_typer += sprintf(phrase_typer, ".\n");
+
+        printf("%s", phrase);
+        say("%s", phrase);
     }
 }
 
@@ -214,6 +256,7 @@ void compare(BinaryTree* tree, const char* word_a, const char* word_b, int* cons
     const TreeNode* node_b = BinaryTree_find(tree, word_b, err_code);
 
     if (node_a == NULL || node_b == NULL) {
+        say("One of the words is unknown to mankind. You must have made a mistake.");
         puts("One of the words was not found.");
 
         return;
@@ -221,6 +264,7 @@ void compare(BinaryTree* tree, const char* word_a, const char* word_b, int* cons
     }
 
     if (node_a == node_b) {
+        say("They are the same object. Or at least the title sais so.");
         puts("They are the same objects...");
 
         return;
@@ -243,35 +287,40 @@ void compare(BinaryTree* tree, const char* word_a, const char* word_b, int* cons
         prefix_length = index - 1;
         break;
     }
+
+    char phrase[MAX_PHRASE_LENGTH] = "";
+    char* phrase_typer = phrase;
     
     if (prefix_length == 0) {
-        puts("These objects have nothing in common, as");
+        phrase_typer += sprintf(phrase_typer, "These objects have nothing in common, as\n");
     } else {
-        printf("These objects are similar to each other as they both can be described as \"");
+        phrase_typer += sprintf(phrase_typer, "These objects are similar to each other as they both can be described as \'");
         for (size_t index = 0; index < prefix_length; ++index) {
-            say_argument(path_a[index], path_a[index + 1], index == prefix_length - 1);
+            phrase_typer += print_argument(phrase_typer, path_a[index], path_a[index + 1], index == prefix_length - 1);
         }
-        puts("\", while");
+        phrase_typer += sprintf(phrase_typer, "\', while\n");
     }
 
     --depth_a;
     --depth_b;
 
-    printf("object %s ", word_a);
+    phrase_typer += sprintf(phrase_typer, "object %s ", word_a);
     for (size_t index = prefix_length; index < depth_a; ++index) {
-        say_argument(path_a[index], path_a[index + 1], index == depth_a - 1);
+        phrase_typer += print_argument(phrase_typer, path_a[index], path_a[index + 1], index == depth_a - 1);
     }
 
-    printf(", and\nobject %s ", word_b);
+    phrase_typer += sprintf(phrase_typer, ", and\nobject %s ", word_b);
     for (size_t index = prefix_length; index < depth_b; ++index) {
-        say_argument(path_b[index], path_b[index + 1], index == depth_b - 1);
+        phrase_typer += print_argument(phrase_typer, path_b[index], path_b[index + 1], index == depth_b - 1);
     }
-    puts(".");
+    phrase_typer += sprintf(phrase_typer, ".\n");
+
+    printf("%s", phrase);
+    say("%s", phrase);
 }
 
-static void say_argument(const TreeNode* node, const TreeNode* next_node, bool is_last) {
-    printf("is ");
-    if (node->right == next_node) printf("not ");
-    printf("%s", node->value);
-    if (!is_last) printf(", ");
+static size_t print_argument(char* destination, const TreeNode* node, const TreeNode* next_node, bool is_last) {
+    return (size_t)sprintf(destination, "is%s %s%s", 
+            node->right == next_node ? " not" : "",
+            node->value, is_last ? "" : ", ");
 }
