@@ -26,6 +26,6 @@ const unsigned long long MAX_LINE_LENGTH = 4096;
  * @param format format string, same as for printf
  * @param __va_args__ arguments, same as for printf
  */
-void _say(const char* format, ...);
+void _say(const char* format, ...) __attribute__((format (printf, 1, 2)));
 
 #endif
