@@ -122,7 +122,8 @@ void _BinaryTree_dump_graph(const BinaryTree* const tree, unsigned int importanc
 
     if (system(draw_request)) return;
 
-    _log_printf(importance, "list_img_dump", "\n<img src=\"%s\">\n", pict_name);
+    _log_printf(importance, "list_img_dump",
+                "\n<details><summary>Graph</summary><img src=\"%s\"></details>\n", pict_name);
 }
 
 TreeNode* BinaryTree_find(const BinaryTree* const tree, const char* word, int* const err_code) {
