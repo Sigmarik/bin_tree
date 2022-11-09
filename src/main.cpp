@@ -79,5 +79,15 @@ int main(const int argc, const char** argv) {
         else execute_command(command, &decision_tree);
     }
 
+    printf("Save graph to the same file if was read from?\n>>> ");
+    yn_branch({
+        FILE* file = fopen(f_name, "w");
+        _LOG_FAIL_CHECK_(file, "error", ERROR_REPORTS, {
+            puts("Failed to open the file for writing.");
+            break;
+        }, &errno, ENOENT);
+        BinaryTree_write_content(&decision_tree, file, &errno);
+    }, {});
+
     return_clean(errno == 0 ? EXIT_SUCCESS : EXIT_FAILURE);
 }

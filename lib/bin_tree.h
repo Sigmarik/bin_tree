@@ -91,4 +91,23 @@ TreeNode* BinaryTree_find(const BinaryTree* const tree, const char* word, int* c
 void BinaryTree_fill_path(const TreeNode* node, const TreeNode* *path, size_t* const out_length, 
                           const size_t max_length, int* const err_code = NULL);
 
+/**
+ * @brief Write tree content to the file.
+ * 
+ * @param tree tree to write to the file
+ * @param file write destination
+ * @param err_code variable to use as errno
+ */
+void BinaryTree_write_content(const BinaryTree* tree, FILE* const file, int* const err_code = NULL);
+
+/**
+ * @brief Write node content to the file.
+ * 
+ * @param node tree node to write to the file
+ * @param file write destination
+ * @param shift depth of the node
+ * @param err_code variable to use as errno
+ */
+void TreeNode_write_content(const TreeNode* node, FILE* const file, int shift, int* const err_code = NULL);
+
 #endif

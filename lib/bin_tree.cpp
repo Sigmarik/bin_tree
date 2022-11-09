@@ -171,6 +171,32 @@ void BinaryTree_fill_path(const TreeNode* node, const TreeNode* *path, size_t* c
     }
 }
 
+void BinaryTree_write_content(const BinaryTree* tree, FILE* const file, int* const err_code) {
+    _LOG_FAIL_CHECK_(tree, "error", ERROR_REPORTS, return, err_code, EINVAL);
+    _LOG_FAIL_CHECK_(file, "error", ERROR_REPORTS, return, err_code, EINVAL);
+
+    TreeNode_write_content(tree->root, file, 0, err_code);
+}
+
+void TreeNode_write_content(const TreeNode* node, FILE* const file, int shift, int* const err_code) {
+    _LOG_FAIL_CHECK_(node, "error", ERROR_REPORTS, return, err_code, EINVAL);
+    _LOG_FAIL_CHECK_(file, "error", ERROR_REPORTS, return, err_code, EINVAL);
+    for (int index = 0; index < shift; index++) fputc('\t', file);
+    fprintf(file, "{\"%s\"", node->value);
+    if (node->left) {
+        fprintf(file, ",\n");
+        TreeNode_write_content(node->left,  file, shift + 1, err_code);
+        fputc(',', file);
+    }
+    if (node->right) {
+        fputc('\n', file);
+        TreeNode_write_content(node->right, file, shift + 1, err_code);
+        fputc('\n', file);
+        for (int index = 0; index < shift; index++) fputc('\t', file);
+    }
+    fputc('}', file);
+}
+
 static void recursive_dtor(TreeNode* node) {
     if (node == NULL) return;
     if (node->free_value) free(node->value);
