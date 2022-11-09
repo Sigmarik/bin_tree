@@ -23,7 +23,7 @@ void _say(const char* format, ...) {
     log_printf(STATUS_REPORTS, "status", "%s", request);
     request[strlen(request)] = '"';
 
-    if (system(request) < 0) {
+    if (system(request) != 0) {
         log_printf(WARNINGS, "warning", "Failed to access espeak module, the speaker was muted.");
         speaker_set_mute(true);
     }
