@@ -95,6 +95,18 @@ void TreeNode_graph_dump(const TreeNode* node, FILE* file) {
 static size_t PictCount = 0;
 
 void _BinaryTree_dump_graph(const BinaryTree* const tree, unsigned int importance) {
+    BinaryTree_status_t status = BinaryTree_status(tree);
+    _log_printf(importance, "tree_dump", "\tTree at %p (status = %d):\n", tree, status);
+    if (status) {
+        for (size_t error_id = 0; error_id < TREE_REPORT_COUNT; ++error_id) {
+            if (status & (1 << error_id)) {
+                _log_printf(importance, "tree_dump", "\t%s\n", TREE_STATUS_DESCR[error_id]);
+            }
+        }
+    }
+
+    if (status & ~TREE_INV_CONNECTIONS) return;
+
     FILE* temp_file = fopen(TREE_TEMP_DOT_FNAME, "w");
     
     _LOG_FAIL_CHECK_(temp_file, "error", ERROR_REPORTS, return, NULL, 0);
@@ -122,12 +134,12 @@ void _BinaryTree_dump_graph(const BinaryTree* const tree, unsigned int importanc
 
     if (system(draw_request)) return;
 
-    _log_printf(importance, "list_img_dump",
+    _log_printf(importance, "tree_dump",
                 "\n<details><summary>Graph</summary><img src=\"%s\"></details>\n", pict_name);
 }
 
 TreeNode* BinaryTree_find(const BinaryTree* const tree, const char* word, int* const err_code) {
-    _LOG_FAIL_CHECK_(tree, "error", ERROR_REPORTS, return NULL, err_code, EFAULT);
+    _LOG_FAIL_CHECK_(!BinaryTree_status(tree), "error", ERROR_REPORTS, return NULL, err_code, EFAULT);
     _LOG_FAIL_CHECK_(word, "error", ERROR_REPORTS, return NULL, err_code, EFAULT);
 
     TreeNode* node = tree->root;
@@ -172,7 +184,7 @@ void BinaryTree_fill_path(const TreeNode* node, const TreeNode* *path, size_t* c
 }
 
 void BinaryTree_write_content(const BinaryTree* tree, FILE* const file, int* const err_code) {
-    _LOG_FAIL_CHECK_(tree, "error", ERROR_REPORTS, return, err_code, EINVAL);
+    _LOG_FAIL_CHECK_(!BinaryTree_status(tree), "error", ERROR_REPORTS, return, err_code, EINVAL);
     _LOG_FAIL_CHECK_(file, "error", ERROR_REPORTS, return, err_code, EINVAL);
 
     TreeNode_write_content(tree->root, file, 0, err_code);
@@ -195,6 +207,26 @@ void TreeNode_write_content(const TreeNode* node, FILE* const file, int shift, i
         for (int index = 0; index < shift; index++) fputc('\t', file);
     }
     fputc('}', file);
+}
+
+BinaryTree_status_t BinaryTree_status(const BinaryTree* tree) {
+    if (tree == NULL) return TREE_NULL;
+    if (tree->root == NULL) return TREE_NULL_ROOT;
+    #ifndef NDEBUG
+        return TreeNode_status(tree->root);
+    #else
+        return 0;
+    #endif
+}
+
+BinaryTree_status_t TreeNode_status(const TreeNode* node) {
+    _LOG_FAIL_CHECK_(node, "error", ERROR_REPORTS, return TREE_INV_CONNECTIONS, &errno, EFAULT);
+
+    if (((bool)node->left) != ((bool)node->right)) return TREE_INV_CONNECTIONS;
+    if (!node->left) return 0;
+    if (node->left->parent != node) return TREE_INV_CONNECTIONS;
+    if (node->right->parent != node) return TREE_INV_CONNECTIONS;
+    return TreeNode_status(node->left) | TreeNode_status(node->right);
 }
 
 static void recursive_dtor(TreeNode* node) {

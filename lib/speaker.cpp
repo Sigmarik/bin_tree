@@ -23,6 +23,8 @@ void _say(const char* format, ...) {
     log_printf(STATUS_REPORTS, "status", "%s", request);
     request[strlen(request)] = '"';
 
+    log_printf(STATUS_REPORTS, "status", "Sending voicing request as \"%s\".\n", request);
+
     if (system(request) != 0) {
         log_printf(WARNINGS, "warning", "Failed to access espeak module, the speaker was muted.");
         speaker_set_mute(true);
@@ -33,6 +35,7 @@ void _say(const char* format, ...) {
 
 void speaker_set_mute(bool new_mute) {
     speaker_mute = new_mute;
+    log_printf(STATUS_REPORTS, "status", "Speaker mute was set to %d.\n", new_mute);
 }
 
 bool speaker_get_mute() {

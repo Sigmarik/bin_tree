@@ -158,7 +158,7 @@ void execute_command(char cmd, BinaryTree* tree, int* const err_code) {
 }
 
 void guess(BinaryTree* tree, int* const err_code) {
-    _LOG_FAIL_CHECK_(tree, "error", ERROR_REPORTS, return, err_code, EFAULT);
+    _LOG_FAIL_CHECK_(!BinaryTree_status(tree), "error", ERROR_REPORTS, return, err_code, EFAULT);
 
     TreeNode* node = tree->root;
 
@@ -212,7 +212,7 @@ void guess(BinaryTree* tree, int* const err_code) {
 }
 
 void define(BinaryTree* tree, const char* word, int* const err_code) {
-    _LOG_FAIL_CHECK_(tree, "error", ERROR_REPORTS, return, err_code, EFAULT);
+    _LOG_FAIL_CHECK_(!BinaryTree_status(tree), "error", ERROR_REPORTS, return, err_code, EFAULT);
     _LOG_FAIL_CHECK_(word, "error", ERROR_REPORTS, return, err_code, EFAULT);
 
     const TreeNode* node = BinaryTree_find(tree, word, err_code);
@@ -248,7 +248,7 @@ void define(BinaryTree* tree, const char* word, int* const err_code) {
 }
 
 void compare(BinaryTree* tree, const char* word_a, const char* word_b, int* const err_code) {
-    _LOG_FAIL_CHECK_(tree,   "error", ERROR_REPORTS, return, err_code, EFAULT);
+    _LOG_FAIL_CHECK_(!BinaryTree_status(tree),   "error", ERROR_REPORTS, return, err_code, EFAULT);
     _LOG_FAIL_CHECK_(word_a, "error", ERROR_REPORTS, return, err_code, EFAULT);
     _LOG_FAIL_CHECK_(word_b, "error", ERROR_REPORTS, return, err_code, EFAULT);
 

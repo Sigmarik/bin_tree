@@ -16,6 +16,7 @@
 #include <stdio.h>
 
 #include "tree_config.h"
+#include "bin_tree_reports.h"
 
 struct TreeNode {
     TreeNode* parent = NULL;
@@ -109,5 +110,21 @@ void BinaryTree_write_content(const BinaryTree* tree, FILE* const file, int* con
  * @param err_code variable to use as errno
  */
 void TreeNode_write_content(const TreeNode* node, FILE* const file, int shift, int* const err_code = NULL);
+
+/**
+ * @brief Get status of the tree.
+ * 
+ * @param tree 
+ * @return (BinaryTree_status_t) binary tree status (0 = OK)
+ */
+BinaryTree_status_t BinaryTree_status(const BinaryTree* tree);
+
+/**
+ * @brief Get status of the connections of the node all all of its subnodes.
+ * 
+ * @param node
+ * @return (BinaryTree_status_t) node connection status (0 = OK)
+ */
+BinaryTree_status_t TreeNode_status(const TreeNode* node);
 
 #endif
