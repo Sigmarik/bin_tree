@@ -46,6 +46,8 @@ int main(const int argc, const char** argv) {
     const char* suggested_name = get_input_file_name(argc, argv);
     if (suggested_name) f_name = suggested_name;
 
+    log_printf(STATUS_REPORTS, "status", "Opening file %s as the source database.\n", f_name);
+
     FILE* source_db = fopen(f_name, "r");
     _LOG_FAIL_CHECK_(source_db, "error", ERROR_REPORTS, {
         log_printf(ERROR_REPORTS, "error", "Failed to open file %s.\n", f_name);
@@ -63,9 +65,11 @@ int main(const int argc, const char** argv) {
 
     track_allocation(&decision_tree, (dtor_t*)BinaryTree_dtor);
 
-    BinaryTree_dump(&decision_tree, ABSOLUTE_IMPORTANCE);
+    BinaryTree_dump(&decision_tree, STATUS_REPORTS);
 
     _LOG_FAIL_CHECK_(!BinaryTree_status(&decision_tree), "error", ERROR_REPORTS, return_clean(EXIT_FAILURE), NULL, 0);
+
+    log_printf(STATUS_REPORTS, "status", "Entering main interaction loop.\n");
 
     say("Here we go.");
 
@@ -91,16 +95,23 @@ int main(const int argc, const char** argv) {
         }, NULL, 0);
     }
 
+    log_printf(STATUS_REPORTS, "status", "Exiting main interaction loop.\n");
+
     say("How sad. Anyway, do you want me to save what you have done to the database?");
 
     printf("Save the graph to the same file if was read from?\n>>> ");
     yn_branch({
+        log_printf(STATUS_REPORTS, "status", "Saving data to the file %s.\n", f_name);
+
         FILE* file = fopen(f_name, "w");
+
         _LOG_FAIL_CHECK_(file, "error", ERROR_REPORTS, {
             puts("Failed to open the file for writing.");
             break;
         }, &errno, ENOENT);
+
         BinaryTree_write_content(&decision_tree, file, &errno);
+
     }, {});
 
     return_clean(errno == 0 ? EXIT_SUCCESS : EXIT_FAILURE);

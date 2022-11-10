@@ -108,16 +108,24 @@ const char* get_output_file_name(const int argc, const char** argv);
  * @param action_yes code to execute on YES
  * @param action_no code to execute on NO
  */
-#define yn_branch(action_yes, action_no) do {   \
-    char __answer = '\0';                       \
-    scanf(" %c", &__answer);                    \
-    __answer = (char)tolower(__answer);         \
-                                                \
-    while (getc(stdin) != '\n');                \
-                                                \
-    if (__answer == 'y') { action_yes; break; } \
-    if (__answer == 'n') { action_no;  break; } \
-    printf("yes/no expected, try again.\n>>> ");\
+#define yn_branch(action_yes, action_no) do {                               \
+    char __answer = '\0';                                                   \
+    scanf(" %c", &__answer);                                                \
+    __answer = (char)tolower(__answer);                                     \
+                                                                            \
+    while (getc(stdin) != '\n');                                            \
+                                                                            \
+    if (__answer == 'y') {                                                  \
+        log_printf(STATUS_REPORTS, "status", "User answered with YES.\n");  \
+        action_yes;                                                         \
+        break;                                                              \
+    }                                                                       \
+    if (__answer == 'n') {                                                  \
+        log_printf(STATUS_REPORTS, "status", "User answered with NO.\n");   \
+        action_no;                                                          \
+        break;                                                              \
+    }                                                                       \
+    printf("yes/no expected, try again.\n>>> ");                            \
 } while(true)
 
 /**

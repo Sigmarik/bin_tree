@@ -160,19 +160,25 @@ void execute_command(char cmd, BinaryTree* tree, int* const err_code) {
 void guess(BinaryTree* tree, int* const err_code) {
     _LOG_FAIL_CHECK_(!BinaryTree_status(tree), "error", ERROR_REPORTS, return, err_code, EFAULT);
 
+    log_printf(STATUS_REPORTS, "status", "Starting guessing...\n");
+
     TreeNode* node = tree->root;
 
     while (node->left && node->right) {
         say("Is it %s?", node->value);
 
         printf("Is it %s? (yes/no)\n>>> ", node->value);
+        log_printf(STATUS_REPORTS, "status", "Made a suggestion of \"%s\".\n", node->value);
         yn_branch({ node = node->left; }, { node = node->right; });
     }
+
+    log_printf(STATUS_REPORTS, "errno", "Suggested answer: \"%s\".\n",node->value);
 
     say("It has to be %s. Am I right?", node->value);
 
     printf("It must be %s. Is it? (yes/no)\n>>> ", node->value);
-    yn_branch({ 
+    yn_branch({
+        log_printf(STATUS_REPORTS, "errno", "Word \"%s\" was guessed correctly.\n",node->value);
         puts("Yay!");
         say("How boring.");
     }, /* else */ {
@@ -181,13 +187,21 @@ void guess(BinaryTree* tree, int* const err_code) {
         say("You must have been mistaking. Are you sure that you are right? "
             "If so, enter what you thought was the correct answer below.");
 
-        printf("What is the correct answer?\n>>> ");
+        printf("What was the correct answer?\n>>> ");
 
         fgets(new_name, MAX_INPUT_LENGTH, stdin);
 
         char* value_buffer = (char*) calloc(strnlen(new_name, MAX_INPUT_LENGTH) + 1, sizeof(*value_buffer));
         _LOG_FAIL_CHECK_(value_buffer, "error", ERROR_REPORTS, return, err_code, ENOMEM);
         memcpy(value_buffer, new_name, strnlen(new_name, MAX_INPUT_LENGTH) - 1);
+
+        log_printf(STATUS_REPORTS, "status", "Correct answer according to the user: \"%s\".\n", new_name);
+
+        if (BinaryTree_find(tree, value_buffer)) {
+            log_printf(STATUS_REPORTS, "status", "New word \"%s\" was already defined. Insertion aborted.\n", value_buffer);
+            say("Nah, word %s has another meaning. You are wrong!", value_buffer);
+            printf("Word %s already exists.\n", value_buffer);
+        }
 
         TreeNode* alpha_node = (TreeNode*) calloc(1, sizeof(*alpha_node));
         TreeNode_ctor(alpha_node, value_buffer, true, node, false, err_code);
@@ -202,11 +216,14 @@ void guess(BinaryTree* tree, int* const err_code) {
         char new_question[MAX_INPUT_LENGTH] = "";
         fgets(new_question, MAX_INPUT_LENGTH, stdin);
 
-        char* separator = (char*) calloc(strnlen(new_question, MAX_INPUT_LENGTH) + 1, sizeof(*separator));
-        _LOG_FAIL_CHECK_(separator, "error", ERROR_REPORTS, return, err_code, ENOMEM);
-        memcpy(separator, new_question, strnlen(new_question, MAX_INPUT_LENGTH) - 1);
+        char* criteria = (char*) calloc(strnlen(new_question, MAX_INPUT_LENGTH) + 1, sizeof(*criteria));
+        _LOG_FAIL_CHECK_(criteria, "error", ERROR_REPORTS, return, err_code, ENOMEM);
+        memcpy(criteria, new_question, strnlen(new_question, MAX_INPUT_LENGTH) - 1);
 
-        node->value = separator;
+        log_printf(STATUS_REPORTS, "status", "Suggested criteria of selection between \"%s\" (as YES) and \"%s\" (as NO) is \"%s\".\n",
+                value_buffer, node->value, criteria);
+
+        node->value = criteria;
         node->free_value = true;
     });
 }
@@ -215,15 +232,24 @@ void define(BinaryTree* tree, const char* word, int* const err_code) {
     _LOG_FAIL_CHECK_(!BinaryTree_status(tree), "error", ERROR_REPORTS, return, err_code, EFAULT);
     _LOG_FAIL_CHECK_(word, "error", ERROR_REPORTS, return, err_code, EFAULT);
 
-    const TreeNode* node = BinaryTree_find(tree, word, err_code);
-    if (!node) {
-        say("You must have made a mistake spelling this word. There are no simmilarities known to mankind!");
+    log_printf(STATUS_REPORTS, "status", "Asked for the definition of the word %s.\n", word);
 
+    const TreeNode* node = BinaryTree_find(tree, word, err_code);
+
+    if (!node) {
+
+        log_printf(STATUS_REPORTS, "errno", "Word \"%s\" was not found.\n", word);
+        say("You must have made a mistake spelling this word. It does not exist.");
         printf("Word was not found!\n");
+
     } else if (node == tree->root) {
+
+        log_printf(STATUS_REPORTS, "errno", "Word \"%s\" was the only word in the tree.\n", word);
         say("It is the only word humanity knows about at this point in time.");
         printf("It is the only known word...\n");
+
     } else {
+
         char phrase[MAX_PHRASE_LENGTH] = "";
         char* phrase_typer = phrase;
 
@@ -242,6 +268,8 @@ void define(BinaryTree* tree, const char* word, int* const err_code) {
 
         phrase_typer += sprintf(phrase_typer, ".\n");
 
+        log_printf(STATUS_REPORTS, "status", "Assembled definition - \"%s\".\n", phrase);
+
         printf("%s", phrase);
         say("%s", phrase);
     }
@@ -252,10 +280,14 @@ void compare(BinaryTree* tree, const char* word_a, const char* word_b, int* cons
     _LOG_FAIL_CHECK_(word_a, "error", ERROR_REPORTS, return, err_code, EFAULT);
     _LOG_FAIL_CHECK_(word_b, "error", ERROR_REPORTS, return, err_code, EFAULT);
 
+    log_printf(STATUS_REPORTS, "status", "Asked for the comparison of words \"%s\", \"%s\".\n", word_a, word_b);
+
     const TreeNode* node_a = BinaryTree_find(tree, word_a, err_code);
     const TreeNode* node_b = BinaryTree_find(tree, word_b, err_code);
 
     if (node_a == NULL || node_b == NULL) {
+
+        log_printf(STATUS_REPORTS, "errno", "One of the words was not found.\n");
         say("One of the words is unknown to mankind. You must have made a mistake.");
         puts("One of the words was not found.");
 
@@ -264,7 +296,9 @@ void compare(BinaryTree* tree, const char* word_a, const char* word_b, int* cons
     }
 
     if (node_a == node_b) {
-        say("They are the same object. Or at least the title sais so.");
+
+        log_printf(STATUS_REPORTS, "errno", "They were the same word.\n");
+        say("They are the same object. Or at least the title says so.");
         puts("They are the same objects...");
 
         return;
@@ -287,6 +321,8 @@ void compare(BinaryTree* tree, const char* word_a, const char* word_b, int* cons
         prefix_length = index - 1;
         break;
     }
+
+    log_printf(STATUS_REPORTS, "errno", "Found %lld criteria matches.\n", (long long)prefix_length);
 
     char phrase[MAX_PHRASE_LENGTH] = "";
     char* phrase_typer = phrase;
@@ -314,6 +350,8 @@ void compare(BinaryTree* tree, const char* word_a, const char* word_b, int* cons
         phrase_typer += print_argument(phrase_typer, path_b[index], path_b[index + 1], index == depth_b - 1);
     }
     phrase_typer += sprintf(phrase_typer, ".\n");
+
+    log_printf(STATUS_REPORTS, "status", "Assembled phrase - \"%s\".\n", phrase);
 
     printf("%s", phrase);
     say("%s", phrase);

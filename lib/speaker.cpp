@@ -20,13 +20,13 @@ void _say(const char* format, ...) {
     char request[MAX_PHRASE_LENGTH + 9] = "espeak \"";
 
     vsprintf(request + strlen(request), format, args);
-    log_printf(STATUS_REPORTS, "status", "%s", request);
     request[strlen(request)] = '"';
+    request[sizeof(request) / sizeof(*request) - 1] = '\0';
 
-    log_printf(STATUS_REPORTS, "status", "Sending voicing request as \"%s\".\n", request);
+    log_printf(STATUS_REPORTS, "status", "Sending voicing request [%s].\n", request);
 
     if (system(request) != 0) {
-        log_printf(WARNINGS, "warning", "Failed to access espeak module, the speaker was muted.");
+        log_printf(WARNINGS, "warning", "Failed to access espeak module, the speaker was muted.\n");
         speaker_set_mute(true);
     }
 
