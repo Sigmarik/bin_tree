@@ -65,6 +65,8 @@ int main(const int argc, const char** argv) {
 
     BinaryTree_dump(&decision_tree, ABSOLUTE_IMPORTANCE);
 
+    _LOG_FAIL_CHECK_(!BinaryTree_status(&decision_tree), "error", ERROR_REPORTS, return_clean(EXIT_FAILURE), NULL, 0);
+
     say("Here we go.");
 
     bool running = true;
@@ -82,11 +84,16 @@ int main(const int argc, const char** argv) {
 
         if (command == 'Q') running = false;
         else execute_command(command, &decision_tree);
+        
+        _LOG_FAIL_CHECK_(!BinaryTree_status(&decision_tree), "error", ERROR_REPORTS, {
+            BinaryTree_dump(&decision_tree, ERROR_REPORTS);
+            return_clean(EXIT_FAILURE);
+        }, NULL, 0);
     }
 
     say("How sad. Anyway, do you want me to save what you have done to the database?");
 
-    printf("Save graph to the same file if was read from?\n>>> ");
+    printf("Save the graph to the same file if was read from?\n>>> ");
     yn_branch({
         FILE* file = fopen(f_name, "w");
         _LOG_FAIL_CHECK_(file, "error", ERROR_REPORTS, {
