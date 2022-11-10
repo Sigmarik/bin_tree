@@ -3,7 +3,11 @@
 Program implements simple binary guessing game using binary trees.
 ## Building
 
-Compile project (linux):
+Install necessary packages (ubuntu) *(will install espeak and graphviz)*:
+
+`...# make install`
+
+Compile the project (linux):
 
 `...# make`
 

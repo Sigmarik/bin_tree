@@ -49,6 +49,10 @@ asset:
 run:
 	cd $(BLD_FOLDER) && exec ./$(BLD_FULL_NAME) $(ARGS)
 
+install:
+	apt-get install espeak -y
+	sudo apt install graphviz
+
 main.o:
 	$(CC) $(CFLAGS) -c src/main.cpp
 
