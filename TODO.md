@@ -1,2 +1,2 @@
 # TODO list for the project
-*Is is empty for now.*
+1. Fix global allocations in alloc_tracker, as they rely on local variable, which is... kinda stupid.
