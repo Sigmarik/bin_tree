@@ -13,54 +13,76 @@
 #define ALLOC_TRACKER_H
 
 #include "stdlib.h"
-#include "lib/util/dbg/logger.h"
-#include "lib/util/dbg/debug.h"
-
-//* Maximum number of allocations including 0-th element.
-const size_t MAX_ALLOCATIONS = 1024 + 1;
 
 typedef void dtor_t(void* subject);
+struct Allocation {
+    void* address = NULL;
+    dtor_t* destructor = NULL;
+    Allocation* next = NULL;
+    Allocation* prev = NULL;
+};
+
+struct AllocTracker {
+    Allocation* last_allocation = NULL;
+};
+
+#ifndef ALLOC_TRACKER_CPP
+extern AllocTracker GlobalTracker;
+#endif
 
 /**
- * @brief Add allocation to the track list.
+ * @brief Attack allocation to the given tracker.
  * 
- * @param subject allocation subject
- * @param dtor destructor
+ * @param tracker 
+ * @param allocation 
  */
-#define track_allocation(subject, dtor) do { \
-    log_printf(STATUS_REPORTS, "status", "Processing tracking request " #subject \
-                                         " with destructor "#dtor" in %s in %s:%d.\n", __PRETTY_FUNCTION__, __FILE__, __LINE__); \
-    _track_allocation(subject, dtor); \
-} while (0)
-
-void _track_allocation(void* subject, dtor_t *dtor);
+void attach_allocation(AllocTracker* tracker, Allocation* allocation);
 
 /**
- * @brief Untrack allocation by variable.
+ * @brief Deallocate all tracked allocations.
  * 
- * @param subject 
+ * @param tracker 
  */
-void untrack_allocation(void* subject);
+void dealloc_all(AllocTracker* tracker);
 
 /**
- * @brief Destroy given allocation.
+ * @brief Deallocate specified address.
  * 
- * @param subject allocation subject
+ * @param tracker 
+ * @param address 
  */
-void free_allocation(void* subject);
+void dealloc_specific(AllocTracker* tracker, const void* address);
 
 /**
- * @brief Destroy all given allocations.
+ * @brief Deallocate stored allocation.
  * 
+ * @param allocation 
  */
-void free_all_allocations();
+void dealloc(Allocation* allocation);
 
-/**
- * @brief Call free() on pointer and set its value to zero.
- * 
- * @param ptr pointer to the variable to reset
- */
-void free_var(void** ptr);
+#define start_local_tracking() AllocTracker __local_alloc_tracker = {}
+
+#define __construct_name(name, line) __allocation##name##line
+
+#define __construct_allocation(variable, destruct)      \
+    Allocation __construct_name(variable, __LINE__) = { \
+        .address = &variable,                           \
+        .destructor = (dtor_t*) destruct,               \
+    }
+
+#define track_allocation(variable, destructor)          \
+    __construct_allocation(variable, destructor);       \
+    attach_allocation(&__local_alloc_tracker,           \
+        &__construct_name(variable, __LINE__))
+
+#define track_global_allocation(variable, destructor)   \
+    __construct_allocation(variable, destructor);       \
+    attach_allocation(&GlobalTracker,                   \
+        &__construct_name(variable, __LINE__))
+
+#define free_all_allocations() dealloc_all(&__local_alloc_tracker)
+
+#define deallocate(address) dealloc_specific(&__local_alloc_tracker, address)
 
 /**
  * @brief Return value but clean all allocations first.

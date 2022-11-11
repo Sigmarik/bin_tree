@@ -20,17 +20,6 @@
 #include "lib/bin_tree.h"
 #include "lib/file_helper.h"
 
-//* We need this function as it is impossible to create static constant lists from local functions.
-//* So... What it does is it creates a dynamic array and tracks it for later deletion.
-/**
- * @brief Create list of void* pointers.
- * 
- * @param count number of elements
- * @param ... elements
- * @return array of elements
- */
-void** bundle(size_t count, ...);
-
 /**
  * @brief Array with stored size.
  * 

@@ -31,7 +31,10 @@
 int main(const int argc, const char** argv) {
     atexit(log_end_program);
 
+    start_local_tracking();
+
     unsigned int log_threshold = STATUS_REPORTS + 1;
+    void* log_threshold_wrapper[] = { &log_threshold };
 
     ActionTag line_tags[] = {
         #include "cmd_flags/main_flags.h"
@@ -55,7 +58,7 @@ int main(const int argc, const char** argv) {
         return_clean(EXIT_FAILURE);
 
     }, &errno, ENOENT);
-    track_allocation(&source_db, (dtor_t*)fclose_void);
+    track_allocation(source_db, fclose_void);
 
     setvbuf(source_db, NULL, _IOFBF, get_file_size(fileno(source_db)));
 
@@ -63,7 +66,7 @@ int main(const int argc, const char** argv) {
 
     BinaryTree_read(&decision_tree, source_db, &errno);
 
-    track_allocation(&decision_tree, (dtor_t*)BinaryTree_dtor);
+    track_allocation(decision_tree, BinaryTree_dtor);
 
     BinaryTree_dump(&decision_tree, STATUS_REPORTS);
 

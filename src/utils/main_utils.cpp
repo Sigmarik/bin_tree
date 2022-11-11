@@ -3,6 +3,9 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
+#include "lib/util/dbg/logger.h"
+#include "lib/util/dbg/debug.h"
+
 #include "lib/speaker.h"
 
 /**
@@ -14,21 +17,6 @@
  * @param is_last is the curent node the last one in the list
  */
 static size_t print_argument(char* destination, const TreeNode* node, const TreeNode* next_node, bool is_last);
-
-void** bundle(size_t count, ...) {
-    va_list args;
-    va_start(args, count);
-
-    void** array = (void**) calloc(count, sizeof(*array));
-    track_allocation(array, free);
-
-    for (size_t index = 0; index < count; index++) {
-        array[index] = va_arg(args, void*);
-    }
-
-    va_end(args);
-    return array;
-}
 
 void MemorySegment_ctor(MemorySegment* segment) {
     segment->content = (int*) calloc(segment->size, sizeof(*segment->content));
